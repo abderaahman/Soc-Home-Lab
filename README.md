@@ -2,8 +2,18 @@ SOC Home Lab
 Author: Abdelrahman Magdy Gouda
 LinkedIn: LinkedIn Profile
 
+Overview
+This repository contains documentation and resources for a Security Operations Center (SOC) home lab deployed on AWS. The lab is designed to simulate real-world cyberattack scenarios and demonstrate how to detect, mitigate, and respond to security incidents. It includes a victim machine, attacker machine, Command and Control (C2) server, and a Security Information and Event Management (SIEM) solution for monitoring and analysis.
+
+Key components:
+
+Windows Server – Target victim machine
+Splunk – SIEM solution for log analysis and incident detection
+Mythic C2 – Command and Control server for managing attacks
+Kali Linux – Attacker machine used for penetration testing and exploitation
+This lab simulates the lifecycle of an attack, from reconnaissance and exploitation to data exfiltration, along with defense mechanisms and containment strategies.
+
 Table of Contents
-Introduction
 Lab Topology
 Attack Scenario Breakdown
 Deployment Steps
@@ -13,60 +23,70 @@ Mythic C2 Deployment
 Practical Attack Implementation
 Detection and Containment
 Lessons Learned
-Introduction
-This repository contains documentation and resources for a SOC (Security Operations Center) Home Lab built on AWS. The lab simulates a real-world cybersecurity attack and response scenario. The components include:
-
-Windows Server (Victim Machine)
-Splunk (SIEM Solution)
-Mythic C2 (Command and Control Server)
-Kali Linux (Attacker Machine)
-This lab walks through the different phases of an attack, including information gathering, gaining access, discovery, payload execution, and data exfiltration, followed by detection and response strategies.
-
 Lab Topology
-The lab is deployed on AWS and consists of the following key components:
+The lab is deployed within an AWS infrastructure, consisting of the following components:
 
-Kali Linux - Attacker Machine
-Mythic C2 Server - Command and Control Server
-Splunk - Security Information and Event Management (SIEM) solution
-Windows Server 2022 - Victim machine for attacks
+Kali Linux – Attacker machine used for reconnaissance and exploitation
+Mythic C2 – Command and Control (C2) server used to deploy and manage payloads
+Splunk – SIEM platform for real-time monitoring and log analysis
+Windows Server 2022 – Victim machine vulnerable to attacks
+Each of these components is hosted on AWS EC2 instances, interconnected within a Virtual Private Cloud (VPC) environment.
+
 Attack Scenario Breakdown
-The lab simulates the following phases of a cyberattack:
+The attack simulation is broken down into seven distinct phases:
 
-Information Gathering: The attacker uses Nmap to identify open ports on the victim machine.
-Initial Access: Using a brute-force RDP attack to gain access to the Windows Server.
-Discovery: Gathering internal system information.
-Defense Evasion: Disabling Windows Defender to avoid detection.
-Payload Execution: Deploying a backdoor payload.
-Command & Control (C2): Maintaining remote control of the victim machine.
-Data Exfiltration: Exfiltrating sensitive data from the victim machine.
+Information Gathering: Using tools like Nmap, the attacker scans for open ports and vulnerable services on the target machine.
+Initial Access: A brute-force attack is executed on the Remote Desktop Protocol (RDP) service of the Windows Server to gain unauthorized access.
+Discovery: Once inside, the attacker gathers critical system information such as users, network configuration, and services.
+Defense Evasion: The attacker disables Windows Defender to avoid detection and ensure continued access.
+Payload Execution: A backdoor payload is deployed on the victim machine to establish persistent access.
+Command & Control (C2): The attacker maintains remote control over the compromised server using Mythic C2.
+Data Exfiltration: Sensitive data is extracted from the victim server to the attacker's C2 infrastructure.
 Deployment Steps
 Windows Deployment
-This involves creating a VPC, configuring routing tables, and launching EC2 instances for Windows Server, Kali Linux, and Mythic C2. Detailed instructions for setting up AWS services are provided.
-
+VPC Creation: Set up a dedicated Virtual Private Cloud (VPC) in AWS to host the lab infrastructure.
+EC2 Instances: Deploy Windows Server 2022, Kali Linux, Splunk, and Mythic C2 as separate EC2 instances, each with its own security group and networking configuration.
+Network Configuration: Create routing tables, subnets, and internet gateways to ensure proper connectivity between the machines.
 Splunk Deployment
-Splunk is deployed on an Amazon Linux instance for monitoring and analyzing logs. Instructions include downloading and configuring Splunk, setting up log forwarding, and assigning an Elastic IP for accessibility.
-
+Instance Setup: Install Splunk on an Amazon Linux EC2 instance.
+Log Forwarding: Configure the Splunk Forwarder on the Windows Server to forward logs to the Splunk instance for real-time monitoring.
+Security Configuration: Set up security rules to allow access to Splunk over port 8000.
 Mythic C2 Deployment
-Mythic C2 is deployed on an Ubuntu server for managing the attack payloads and sessions with the compromised victim machine.
-
+Ubuntu Setup: Deploy Mythic C2 on an Ubuntu server in a separate VPC from the other instances to simulate an external attacker.
+Payload Creation: Configure and deploy payloads using Mythic C2 to target the Windows Server.
+C2 Session Management: Manage and control compromised machines using Mythic's C2 functionality.
 Practical Attack Implementation
-The attack consists of seven phases:
+This lab covers a hands-on approach to simulating a full attack lifecycle. It includes:
 
-Information Gathering: Using Nmap to scan for open ports.
-Initial Access: Brute-forcing RDP to access the Windows Server.
-Discovery: Command-line queries to understand the system environment.
-Defense Evasion: Disabling security mechanisms such as Windows Defender.
-Payload Execution: Executing malicious payloads using the Mythic C2 server.
-Command and Control (C2): Maintaining control over the compromised machine.
-Data Exfiltration: Extracting sensitive information from the victim system.
+Phase 1: Information Gathering: Using Nmap to scan for open ports, such as RDP on the victim machine.
+Phase 2: Initial Access: Gaining access to the Windows Server through brute-force attacks on the RDP service using tools like Crowbar.
+Phase 3: Discovery: Identifying critical system information using commands like whoami, net user, and ipconfig.
+Phase 4: Defense Evasion: Disabling security tools like Windows Defender to remain undetected.
+Phase 5: Payload Execution: Executing a malicious payload using Mythic C2 to establish persistent access.
+Phase 6: Command & Control: Maintaining remote control over the victim through Mythic C2 sessions.
+Phase 7: Data Exfiltration: Exfiltrating sensitive files, such as password files, from the victim machine.
 Detection and Containment
-The logs collected by Splunk allow detection of the attack. By analyzing Event Code 4776, unusual activity such as failed login attempts and unauthorized processes can be detected. Key containment strategies include isolating the compromised system, terminating C2 connections, blocking the attacker's IP address, and re-enabling security mechanisms like Windows Defender.
+Detection
+Using Splunk, the attack is detected by monitoring logs for unusual events, such as:
 
+Repeated login failures (Event Code 4776)
+Unauthorized process execution (e.g., custom malicious processes)
+New user accounts created by the attacker
+Containment
+To contain the attack and prevent further damage:
+
+Isolate the Victim: Disconnect the compromised Windows Server from the network.
+Terminate C2 Sessions: Block the C2 connections to cut off the attacker's access.
+Firewall Adjustments: Block the attacker's IP and update firewall rules to prevent future attacks.
+Remove Unauthorized Users: Remove any accounts created by the attacker and re-enable security measures like Windows Defender.
 Lessons Learned
-Key takeaways from the lab include:
+Importance of Strong Authentication: Weak passwords allowed brute-force attacks to succeed. Implementing multi-factor authentication (MFA) would prevent such attacks.
 
-Importance of Strong Authentication: Weak RDP passwords made the system vulnerable. Multi-factor authentication (MFA) should be enabled.
-Early Detection and Monitoring: Implementing endpoint detection and response (EDR) could have mitigated the attack.
-Need for Regular Vulnerability Assessments: Open ports and weak security configurations were exploited. Regular scans should be performed.
-Anticipating Defense Evasion Techniques: Security teams must be prepared to detect evasion tactics like disabling antivirus software.
-This is a detailed README file that outlines the purpose, components, and steps involved in the SOC Home Lab. You can adjust and add further details as needed based on any specific requirements.
+Early Detection and Monitoring: Endpoint detection and response (EDR) solutions should be deployed to detect and respond to malicious activities like disabling security services or abnormal RDP sessions.
+
+Regular Vulnerability Assessments: Open ports, especially services like RDP, should be routinely scanned and secured to prevent exploitation.
+
+Anticipating Defense Evasion: Attackers often disable security measures. Continuous monitoring and integrity checks should be performed to detect such evasion techniques.
+
+Conclusion
+This SOC Home Lab provides a comprehensive, hands-on experience of simulating and detecting cyberattacks in a controlled environment. It serves as a valuable resource for learning about attack methods, detection strategies, and incident response techniques.
